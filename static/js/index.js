@@ -1,6 +1,22 @@
 document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
+    if (document.getElementById('admin_check').checked) {
+        fetch('/set_role', {
+            method: 'POST',
+            body: JSON.stringify({ role: 'admin' }),
+        })
+    }
+    else {
+        fetch('/set_role', {
+            method: 'POST',
+            body: JSON.stringify({ role: 'user' }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+    }
+
     const formData = new FormData(event.target);
 
     fetch('/login', {
@@ -11,6 +27,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
         .then(data => {
             if (data.success) {
                 console.log('Login successful');
+                window.location.href = '/lists';
             } else {
                 console.log('Login failed. ' + data.message);
             }
@@ -19,6 +36,19 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
 
 document.getElementById('registerForm').addEventListener('submit', function (event) {
     event.preventDefault();
+
+    // if (document.getElementById('admin_check').checked) {
+    //     fetch('/set_role', {
+    //         method: 'POST',
+    //         body: JSON.stringify({ role: 'admin' }),
+    //     })
+    // }
+    // else {
+    //     fetch('/set_role', {
+    //         method: 'POST',
+    //         body: JSON.stringify({ role: 'user' }),
+    //     })
+    // }
 
     const formData = new FormData(event.target);
 
@@ -35,12 +65,3 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
             }
         });
 });
-
-sessionStorage.setItem('role', 'user');
-
-document.getElementById('admin_check').addEventListener('input', () => {
-    sessionStorage.setItem('role', 'admin');
-})
-document.getElementById('user_check').addEventListener('input', () => {
-    sessionStorage.setItem('role', 'user');
-})

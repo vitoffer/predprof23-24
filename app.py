@@ -1,18 +1,9 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 
 app = Flask(__name__)
 app.secret_key = '12345678'
-
-admins = [
-    {'id': 1, 'username': 'admin', 'password': generate_password_hash('admin_password')}
-]
-
-users = [
-    {'id': 2, 'username': 'user', 'password': generate_password_hash('user_password')}
-]
 
 
 @app.route('/')
@@ -28,20 +19,27 @@ def login():
     connection = sqlite3.connect('./data/data.db')
     cursor = connection.cursor()
 
+    if session.get('role') == 'user':
+        user = cursor.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        if user is None:
+            return jsonify({'success': False, 'message': 'Invalid credentials'})
+        if user[2] == password:
+            session['user_id'] = user[0]
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'message': 'Invalid credentials'})
+    if session.get('role') == 'admin':
+        user = cursor.execute("SELECT * FROM admins WHERE username = ?", (username,)).fetchone()
+        if user[2] == password:
+            session['user_id'] = user[0]
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'message': 'Invalid credentials'})
+
     connection.commit()
     cursor.close()
     connection.close()
 
-    if session.get('role') == 'admin':
-        user = next((user for user in admins if user['username'] == username), None)
-    else:
-        user = next((user for user in users if user['username'] == username), None)
-
-    if user and check_password_hash(user['password'], password):
-        session['user_id'] = user['id']
-        return jsonify({'success': True})
-    else:
-        return jsonify({'success': False, 'message': 'Invalid credentials'})
 
 
 @app.route('/register', methods=['POST'])
@@ -50,21 +48,30 @@ def register():
         username = request.form['newUsername']
         password = request.form['newPassword']
 
-        if ((session.get('role') == 'admin' and any(user['username'] == username for user in admins)) or
-                (session.get('role') == 'user' and any(user['username'] == username for user in users))):
-            return jsonify({'success': False, 'message': 'Username already exists'})
 
-        new_user = {
-            'id': len(users if session.get('role') == 'user' else admins) + 1,
-            'username': username,
-            'password': generate_password_hash(password)
-        }
+        connection = sqlite3.connect('./data/data.db')
+        cursor = connection.cursor()
 
         if session.get('role') == 'user':
-            users.append(new_user)
+            if username not in [i[0] for i in cursor.execute("SELECT username FROM users").fetchall()]:
+                id = cursor.execute("SELECT * FROM users").fetchall()
+                if len(id) == 0:
+                    id = 0
+                else:
+                    id = id[-1][0] + 1
+                cursor.execute("INSERT INTO users (id, username, password) VALUES (?, ?, ?)", (id, username, password))
+
         else:
-            admins.append(new_user)
-        session['user_id'] = new_user['id']
+            if username not in [i[0] for i in cursor.execute("SELECT username FROM admins").fetchall()]:
+                id = cursor.execute("SELECT * FROM users").fetchall()
+                if len(id) == 0:
+                    id = 0
+                else:
+                    id = id[-1][0] + 1
+                cursor.execute("INSERT INTO admins (id, username, password) VALUES (?, ?, ?)", (id, username, password))
+        connection.commit()
+        cursor.close()
+        connection.close()
 
         return jsonify({'success': True})
 
@@ -76,6 +83,22 @@ def register():
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('home'))
+
+@app.route('/set_role', methods=['POST'])
+def set_role():
+    session['role'] = request.get_json()['role']
+    return jsonify({'success': True})
+
+@app.route('/lists')
+def lists():
+    role = session['role']
+    if role == 'admin':
+        return render_template('lists_admin.html')
+    elif role == 'user':
+        return render_template('lists_user.html')
+    else:
+        return redirect(url_for('index'))
+
 
 
 if __name__ == '__main__':
