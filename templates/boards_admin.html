@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boards</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/boards_admin.css') }}">
+    <script src="{{ url_for('static', filename='js/boards_admin.js') }}" defer></script>
+</head>
+
+<body>
+    <div class="boards" id="boards">
+        <h1 align="center">Игровые поля</h1>
+        <div class="addBoardDiv"><button id="addBoard" class="addBoard">Create board</button></div>
+        <form class="addBoardForm" id="addBoardForm">
+            <input type="text" name="" id="newBoardName" placeholder="Введите название" required>
+            <input type="number" name="" id="newBoardSize" placeholder="Введите длину поля" required>
+            <input type="submit" value="OK" id="newBoardSubmit">
+        </form>
+    </div>
+</body>
+
+</html>
