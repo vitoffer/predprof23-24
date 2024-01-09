@@ -10,7 +10,35 @@
 </head>
 
 <body>
+    <div class="users">
+        <h3>Пользователи на поле:</h3>
+        <button id="add-prize">Добавить нового пользователя</button>
+        <div class="user">
+            <span class="user-id">user1:</span>
+            <button>-</button>
+            <span class="shots">2 выстрела</span>
+            <button>+</button>
+            <button class="del-user">del</button>
+        </div>
+    </div>
+    <div class="prizes">
+        <h3>Призы на поле:</h3>
 
+        <div class="prize">
+            <span class="prize-name">prize1:</span>
+            <p class="prize-desc">Очень хороший приз</p>
+            <img src="{{ url_for('static', filename='prizes/1.jpg') }}" alt="" class="prize-img">
+            <button class="del-prize">del</button>
+        </div>
+    </div>
+    <div class="ships">
+        <h3>Корабли на поле:</h3>
+        <div class="ship">
+            <p class="ship-prize">Корабль за приз1</p>
+            <button class="del-ship">del</button>
+        </div>
+    </div>
+    <div class="board" id="board"></div>
 </body>
 
 </html>

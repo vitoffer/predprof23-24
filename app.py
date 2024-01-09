@@ -148,8 +148,12 @@ def board(board_id):
 def admin_board():
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
-        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (session['board_id'],)).fetchall()
-        return jsonify(board)
+        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (session['board_id'],)).fetchone()
+        ships = cursor.execute('SELECT * FROM ships WHERE board_id = ?', (session['board_id'],)).fetchall()
+        prizes = cursor.execute('SELECT * FROM prizes WHERE board_id = ?', (session['board_id'],)).fetchall()
+        users = cursor.execute('SELECT * FROM users').fetchall()
+        users = list(filter(lambda user: user[3] in board[3], users))
+        return jsonify({'board': board, 'ships': ships, 'prizes': prizes, 'users': users})
 
 @app.route('/get_user_boards', methods=['GET'])
 def get_user_boards():
