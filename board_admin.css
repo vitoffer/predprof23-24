@@ -1,0 +1,48 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    gap: 20px;
+}
+
+button {
+    padding-inline: 5px;
+}
+
+.users,
+.ships,
+.prizes {
+    width: 20%;
+    background-color: #c9c9c9;
+    border: #000 2px solid;
+}
+
+h3 {
+    text-align: center;
+}
+
+img {
+    max-width: 70px;
+    max-height: 70px;
+}
+
+.row {
+    display: flex;
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+    background-color: #b4b4b4;
+    border: 2px solid #000;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    font-size: 3rem;
+    font-family: Arial;
+    color: #b4b4b4;
+}

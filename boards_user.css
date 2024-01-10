@@ -1,0 +1,22 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.boards {
+    width: 90%;
+    margin: 20px auto;
+    min-height: 95vh;
+    background-color: #c5c5c5;
+    border: solid #000 2px;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.board {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    cursor: pointer;
+}
