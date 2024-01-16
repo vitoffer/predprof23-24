@@ -5,7 +5,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
     const password = document.getElementById('password').value;
     const role = document.getElementById('admin_check').checked ? 'admin' : 'user';
 
-    fetch('/login', {
+    fetch('/api/login', {
         method: 'POST',
         body: JSON.stringify({
             username: username,
@@ -34,7 +34,7 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
     const newPassword = document.getElementById('newPassword').value;
     const role = document.getElementById('admin_check').checked ? 'admin' : 'user';
 
-    fetch('/register', {
+    fetch('/api/register', {
         method: 'POST',
         body: JSON.stringify({
             username: newUsername,

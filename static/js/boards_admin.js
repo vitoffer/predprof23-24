@@ -1,6 +1,5 @@
 document.getElementById('addBoard').addEventListener('click', () => {
     document.getElementById('addBoardForm').style.display = 'block';
-
 })
 
 function createBoard(id1, name1, size1) {
@@ -28,7 +27,7 @@ document.getElementById('addBoardForm').addEventListener('submit', (event) => {
     const prevBoard = document.querySelectorAll('.board')[document.querySelectorAll('.board').length - 1];
     const id = +prevBoard.id + 1, name = document.getElementById('newBoardName').value, size = document.getElementById('newBoardSize').value;
     createBoard(String(id), name, size);
-    fetch('create_board', {
+    fetch('/api/create_board', {
         method: 'POST',
         body: JSON.stringify({
             id: id,
@@ -45,7 +44,7 @@ document.getElementById('addBoardForm').addEventListener('submit', (event) => {
 function delBoard(event, button) {
     event.stopPropagation();
     const board = button.parentNode;
-    fetch('del_board', {
+    fetch('/api/del_board', {
         method: 'POST',
         body: JSON.stringify({
             id: board.id,
@@ -59,7 +58,7 @@ function delBoard(event, button) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/get_admin_boards')
+    fetch('/api/get_admin_boards')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);

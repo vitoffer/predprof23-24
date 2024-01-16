@@ -13,7 +13,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
     username = data.get('username')
@@ -28,8 +28,8 @@ def login():
 
         if user is None:
             return jsonify({'success': False, 'message': 'Invalid credentials'})
-        if user[2] == password:
-            session['user_id'] = user[0]
+        if user[1] == password:
+            session['username'] = user[0]
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'message': 'Invalid credentials'})
@@ -37,8 +37,8 @@ def login():
         user = cursor.execute("SELECT * FROM admins WHERE username = ?", (username,)).fetchone()
         if user is None:
             return jsonify({'success': False, 'message': 'Invalid credentials'})
-        if user[2] == password:
-            session['user_id'] = user[0]
+        if user[1] == password:
+            session['username'] = user[0]
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'message': 'Invalid credentials'})
@@ -48,7 +48,7 @@ def login():
     connection.close()
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
@@ -61,21 +61,11 @@ def register():
 
         if session['role'] == 'user':
             if username not in [i[0] for i in cursor.execute("SELECT username FROM users").fetchall()]:
-                user_id = cursor.execute("SELECT * FROM users").fetchall()
-                if len(user_id) == 0:
-                    user_id = 0
-                else:
-                    user_id = user_id[-1][0] + 1
-                cursor.execute("INSERT INTO users (id, username, password) VALUES (?, ?, ?)", (user_id, username, password))
+                cursor.execute("INSERT INTO users (username, password, prizes) VALUES (?, ?, ?)", (username, password, None))
 
         else:
             if username not in [i[0] for i in cursor.execute("SELECT username FROM admins").fetchall()]:
-                user_id = cursor.execute("SELECT * FROM users").fetchall()
-                if len(user_id) == 0:
-                    user_id = 0
-                else:
-                    user_id = user_id[-1][0] + 1
-                cursor.execute("INSERT INTO admins (id, username, password) VALUES (?, ?, ?)", (user_id, username, password))
+                cursor.execute("INSERT INTO admins (username, password) VALUES (?, ?, ?)", (username, password))
         connection.commit()
         cursor.close()
         connection.close()
@@ -86,15 +76,15 @@ def register():
         return jsonify({'success': False, 'message': str(e)})
 
 
-@app.route('/logout')
-def logout():
-    session.pop('user_id', None)
-    return redirect(url_for('home'))
+# @app.route('/logout')
+# def logout():
+#     session.pop('user_id', None)
+#     return redirect(url_for('home'))
 
 
 @app.route('/boards')
 def boards():
-    if 'user_id' in session:
+    if 'username' in session:
         role = session['role']
         if role == 'admin':
             return render_template('boards_admin.html')
@@ -106,14 +96,14 @@ def boards():
         return redirect(url_for('index'))
 
 
-@app.route('/get_admin_boards', methods=['GET'])
+@app.route('/api/get_admin_boards', methods=['GET'])
 def get_admin_boards():
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
         boards = cursor.execute('SELECT * FROM boards').fetchall()
         return jsonify(boards)
 
-@app.route('/create_board', methods=['POST'])
+@app.route('/api/create_board', methods=['POST'])
 def create_board():
     data = request.get_json()
     with sqlite3.connect(DB_FILE) as connect:
@@ -122,7 +112,7 @@ def create_board():
         return jsonify({'success': True})
 
 
-@app.route('/del_board', methods=['POST'])
+@app.route('/api/del_board', methods=['POST'])
 def del_board():
     data = request.get_json()
     with sqlite3.connect(DB_FILE) as connect:
@@ -133,7 +123,7 @@ def del_board():
 
 @app.route('/board/<board_id>')
 def board(board_id):
-    if 'user_id' in session and 'role' in session:
+    if 'username' in session and 'role' in session:
         role = session['role']
         session['board_id'] = board_id
         if role == 'admin':
@@ -144,24 +134,50 @@ def board(board_id):
         return redirect(url_for('index'))
 
 
-@app.route('/board_admin', methods=['GET'])
+@app.route('/api/board_admin', methods=['GET'])
 def admin_board():
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
-        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (session['board_id'],)).fetchone()
-        ships = cursor.execute('SELECT * FROM ships WHERE board_id = ?', (session['board_id'],)).fetchall()
-        prizes = cursor.execute('SELECT * FROM prizes WHERE board_id = ?', (session['board_id'],)).fetchall()
-        users = cursor.execute('SELECT * FROM users').fetchall()
-        users = list(filter(lambda user: user[3] in board[3], users))
-        return jsonify({'board': board, 'ships': ships, 'prizes': prizes, 'users': users})
+        board_id = session['board_id']
+        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (board_id)).fetchone()
+        board_name = board[1]
+        board_size = board[2]
+        print(board)
+        print(cursor.execute('SELECT * FROM users').fetchall())
+        users = list(filter(lambda user: str(user[0]) in board[3], cursor.execute('SELECT * FROM users').fetchall()))
+        shots = cursor.execute('SELECT * FROM shots WHERE board_id = ?', (board_id)).fetchall()
+        prizes = cursor.execute('SELECT * FROM prizes WHERE board_id = ?', (board_id)).fetchall()
+        prizes_ship_ids = map(lambda x: x[5], prizes)
+        ships = list(filter(lambda ship: ship[0] in prizes_ship_ids, cursor.execute('SELECT * FROM ships').fetchall()))
 
-@app.route('/get_user_boards', methods=['GET'])
+        return jsonify({'id': board_id, 'name': board_name, 'size': board_size, 'users': users, 'shots': shots, 'prizes': prizes, 'ships': ships})
+
+@app.route('/api/get_user_boards', methods=['GET'])
 def get_user_boards():
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
         boards = cursor.execute('SELECT * FROM boards').fetchall()
         boards = list(filter(lambda board: board[3] is not None and str(session['user_id']) in board[3], boards))
         return jsonify(boards)
+
+
+@app.route('/api/add_user_on_board', methods=['POST'])
+def add_user_on_board():
+    data = request.get_json()
+    with sqlite3.connect(DB_FILE) as connect:
+        cursor = connect.cursor()
+        print(data)
+        board_id = data['boardId']
+        username = data['userName']
+        shots = data['shots']
+        prev_board_users = cursor.execute('SELECT users FROM boards WHERE id = ?', (board_id,)).fetchone()[0]
+        cursor.execute('UPDATE boards SET users = ? WHERE id = ?', (prev_board_users + ',' + username, board_id))
+        cursor.execute('INSERT INTO shots (username, board_id, remaining_shots) VALUES (?, ?, ?)', (username, board_id, shots))
+        return jsonify({'success': True})
+
+@app.route('/api/change_user_shots')
+def change_user_shots():
+    data = request.get_json()
 
 
 def create_table():
@@ -177,7 +193,8 @@ def create_table():
             CREATE TABLE IF NOT EXISTS users (
             id INTEGER,
             username TEXT,
-            password TEXT
+            password TEXT,
+            prizes TEXT
             );''')
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS boards (
@@ -190,9 +207,23 @@ def create_table():
             CREATE TABLE IF NOT EXISTS prizes (
             id INTEGER,
             name TEXT,
+            descr TEXT,
             img TEXT,
-            board_id TEXT,
+            board_id INTEGER,
             ship_id INTEGER
+            );''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ships (
+            id INTEGER,
+            coords TEXT,
+            was_shot INTEGER
+            );''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS shots (
+            id INTEGER,
+            user_id INTEGER,
+            board_id INTEGER,
+            remaining_shots INTEGER
             );''')
         connect.commit()
 
