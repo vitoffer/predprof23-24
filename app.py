@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import sqlite3
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = '92347_а114!'
 DB_FILE = 'data.db'
+UPLOAD_FOLDER = 'static/prizes'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 @app.route('/')
@@ -62,10 +65,14 @@ def register():
         if session['role'] == 'user':
             if username not in [i[0] for i in cursor.execute("SELECT username FROM users").fetchall()]:
                 cursor.execute("INSERT INTO users (username, password, prizes) VALUES (?, ?, ?)", (username, password, None))
+            else:
+                return jsonify({'success': False, 'message': 'User already exists'})
 
         else:
             if username not in [i[0] for i in cursor.execute("SELECT username FROM admins").fetchall()]:
-                cursor.execute("INSERT INTO admins (username, password) VALUES (?, ?, ?)", (username, password))
+                cursor.execute("INSERT INTO admins (username, password) VALUES (?, ?)", (username, password))
+            else:
+                return jsonify({'success': False, 'message': 'User already exists'})
         connection.commit()
         cursor.close()
         connection.close()
@@ -127,9 +134,9 @@ def board(board_id):
         role = session['role']
         session['board_id'] = board_id
         if role == 'admin':
-            return render_template('board_admin.html', board_id=board_id)
+            return render_template('board_admin.html', title=board_id)
         elif role == 'user':
-            return render_template('board_user.html', board_id=board_id)
+            return render_template('board_user.html', title=board_id)
     else:
         return redirect(url_for('index'))
 
@@ -139,15 +146,15 @@ def admin_board():
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
         board_id = session['board_id']
-        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (board_id)).fetchone()
+        board = cursor.execute('SELECT * FROM boards WHERE id = ?', (board_id,)).fetchone()
         board_name = board[1]
         board_size = board[2]
-        print(board)
-        print(cursor.execute('SELECT * FROM users').fetchall())
-        users = list(filter(lambda user: str(user[0]) in board[3], cursor.execute('SELECT * FROM users').fetchall()))
-        shots = cursor.execute('SELECT * FROM shots WHERE board_id = ?', (board_id)).fetchall()
-        prizes = cursor.execute('SELECT * FROM prizes WHERE board_id = ?', (board_id)).fetchall()
-        prizes_ship_ids = map(lambda x: x[5], prizes)
+        users = list(filter(lambda user: ',' + str(user[0]) + ',' in ',' + board[3] + ',' if board[3] is not None else False, cursor.execute('SELECT * FROM users').fetchall()))
+        shots = cursor.execute('SELECT * FROM shots WHERE board_id = ?', (board_id,)).fetchall()
+
+        prizes = cursor.execute('SELECT * FROM prizes WHERE board_id = ?', (board_id,)).fetchall()
+        prizes_ship_ids = list(map(lambda x: x[0], prizes))
+
         ships = list(filter(lambda ship: ship[0] in prizes_ship_ids, cursor.execute('SELECT * FROM ships').fetchall()))
 
         return jsonify({'id': board_id, 'name': board_name, 'size': board_size, 'users': users, 'shots': shots, 'prizes': prizes, 'ships': ships})
@@ -166,19 +173,83 @@ def add_user_on_board():
     data = request.get_json()
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
-        print(data)
+
         board_id = data['boardId']
         username = data['userName']
         shots = data['shots']
         prev_board_users = cursor.execute('SELECT users FROM boards WHERE id = ?', (board_id,)).fetchone()[0]
-        cursor.execute('UPDATE boards SET users = ? WHERE id = ?', (prev_board_users + ',' + username, board_id))
+        if prev_board_users is None:
+            cursor.execute('UPDATE boards SET users = ? WHERE id = ?', (username, board_id))
+        else:
+            cursor.execute('UPDATE boards SET users = ? WHERE id = ?', (prev_board_users + ',' + username, board_id))
         cursor.execute('INSERT INTO shots (username, board_id, remaining_shots) VALUES (?, ?, ?)', (username, board_id, shots))
         return jsonify({'success': True})
 
-@app.route('/api/change_user_shots')
+@app.route('/api/change_user_shots', methods=['POST'])
 def change_user_shots():
     data = request.get_json()
 
+    with sqlite3.connect(DB_FILE) as connect:
+        cursor = connect.cursor()
+        board_id = data['boardId']
+        username = data['userName']
+        shots = data['shots']
+        prevShots = cursor.execute('SELECT remaining_shots FROM shots WHERE username = ? AND board_id = ?', (username, board_id)).fetchone()[0]
+        cursor.execute('UPDATE shots SET remaining_shots = ? WHERE username = ? AND board_id = ?', (str(int(prevShots) + int(shots)), username, board_id))
+        return jsonify({'success': True})
+
+@app.route('/api/del_user_from_board', methods=['POST'])
+def del_user_from_board():
+    data = request.get_json()
+    with sqlite3.connect(DB_FILE) as connect:
+        cursor = connect.cursor()
+        board_id = data['boardId']
+        username = data['userName']
+        prev_board_users = ',' + cursor.execute('SELECT users FROM boards WHERE id = ?', (board_id,)).fetchone()[0] + ','
+
+        new_board_users = prev_board_users.replace(',' + username + ',', ',')[1:-1]
+        if len(new_board_users) == 0:
+            new_board_users = None
+        elif new_board_users[0] == ',':
+            new_board_users = new_board_users[1:]
+        elif new_board_users[-1] == ',':
+            new_board_users = new_board_users[:-1]
+        cursor.execute('UPDATE boards SET users = ? WHERE id = ?', (new_board_users, board_id))
+        cursor.execute('DELETE FROM shots WHERE username = ? AND board_id = ?', (username, board_id))
+        return jsonify({'success': True})
+
+
+@app.route('/api/add_prize_on_board', methods=['POST'])
+def add_prize_on_board():
+    data = request.form
+    file = request.files['file']
+    filename = file.filename
+
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    with sqlite3.connect(DB_FILE) as connect:
+        cursor = connect.cursor()
+        prev_prize_id = cursor.execute('SELECT MAX(id) FROM prizes').fetchone()[0]
+        if prev_prize_id is None:
+            new_id = 0
+        else:
+            new_id = prev_prize_id + 1
+        cursor.execute('INSERT INTO prizes (id, name, descr, img, board_id) VALUES (?, ?, ?, ?, ?)', (new_id, data['newPrizeName'], data['newPrizeDesc'], filename, data['boardId']))
+        cursor.execute('INSERT INTO ships (prize_id, coords, was_shot) VALUES (?, ?, ?)', (new_id, None, 0))
+        return jsonify({'success': True, 'id': new_id})
+
+@app.route('/api/del_prize_from_board', methods=['POST'])
+def del_prize_from_board():
+    data = request.get_json()
+    with sqlite3.connect(DB_FILE) as connect:
+        cursor = connect.cursor()
+        cursor.execute('DELETE FROM prizes WHERE id = ?', (data['prizeId'],))
+        cursor.execute('DELETE FROM ships WHERE prize_id = ?', (data['prizeId'],))
+        users = cursor.execute('SELECT * FROM users').fetchall()
+        for user in users:
+            if user[2] is not None and ',' + str(data['prizeId']) + ',' in ',' + user[2] + ',':
+                cursor.execute('UPDATE users SET prizes = ? WHERE username = ?', (user[2].replace(',' + str(data['prizeId']) + ',', ','), user[0]))
+        return jsonify({'success': True})
 
 def create_table():
     with sqlite3.connect(DB_FILE) as connect:
@@ -209,12 +280,11 @@ def create_table():
             name TEXT,
             descr TEXT,
             img TEXT,
-            board_id INTEGER,
-            ship_id INTEGER
+            board_id INTEGER
             );''')
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS ships (
-            id INTEGER,
+            prize_id INTEGER,
             coords TEXT,
             was_shot INTEGER
             );''')

@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/board_admin.css') }}">
-    <script src="{{ url_for('static', filename='js/board_admin.js') }}" defer></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/board_admin.js') }}" defer></script>
 </head>
 
 <body>
-    <h1>Игровое поле: name</h1>
     <main>
         <div class="users" id="users">
             <h3>Пользователи на поле:</h3>

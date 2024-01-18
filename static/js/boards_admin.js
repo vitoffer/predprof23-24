@@ -24,8 +24,14 @@ function createBoard(id1, name1, size1) {
 
 document.getElementById('addBoardForm').addEventListener('submit', (event) => {
     event.preventDefault();
-    const prevBoard = document.querySelectorAll('.board')[document.querySelectorAll('.board').length - 1];
-    const id = +prevBoard.id + 1, name = document.getElementById('newBoardName').value, size = document.getElementById('newBoardSize').value;
+    let prevBoard = document.querySelectorAll('.board')[document.querySelectorAll('.board').length - 1];
+    let id;
+    if (prevBoard == undefined) {
+        id = 0;
+    } else {
+        id = Number(prevBoard.id) + 1;
+    }
+    const name = document.getElementById('newBoardName').value, size = document.getElementById('newBoardSize').value;
     createBoard(String(id), name, size);
     fetch('/api/create_board', {
         method: 'POST',
