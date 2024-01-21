@@ -1,4 +1,4 @@
-let ID, NAME, SIZE, USERS, SHOTS, PRIZES, SHIPS;
+let ID, NAME, SIZE, USERS, REMAIN_SHOTS, PRIZES, SHIPS, selectedShip, SHOTS, usedShips = [];
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/board_admin')
         .then(response => {
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: user[0],
                 prizes: user[2] && user[2].split(','),
             }));
-            SHOTS = Array.from(data['shots'], shot => ({
+            REMAIN_SHOTS = Array.from(data['remain_shots'], shot => ({
                 user_name: shot[0],
                 remained: shot[2],
             }));
@@ -27,9 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
             SHIPS = Array.from(data['ships'], ship => ({
                 prize_id: ship[0],
-                coords: ship[1].split('-'),
+                coords: ship[1],
                 was_shot: ship[2] == '1' ? true : false,
             }));
+            SHOTS = Array.from(data['shots'], shot => ({
+                id: shot[0],
+                user_name: shot[2],
+                coords: shot[3],
+            }))
             // console.log('id: ' + ID);
             // console.log('name: ' + NAME);
             // console.log('size: ' + SIZE);
@@ -44,38 +49,49 @@ document.addEventListener('DOMContentLoaded', () => {
             fillUsersList();
             fillPrizesList();
             fillShipsList();
-            drawBoard(SIZE);
+            drawBoard();
+            drawShips();
         })
         .catch(error => {
             console.error('Fetch error:', error);
         });
 });
 
-function drawBoard(size) {
+function drawBoard() {
     const board = document.getElementById('board');
-    for (let i = 0; i < size; i++) {
+    for (let i = 0; i < SIZE; i++) {
         const row = document.createElement('div');
         row.classList.add('row');
-        for (let j = 0; j < size; j++) {
+        for (let j = 0; j < SIZE; j++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
             cell.id = 'cell-' + i + '-' + j;
-            cell.textContent = 'X';
+            cell.setAttribute('onclick', "setShip(this.id)");
             row.appendChild(cell);
         }
         board.appendChild(row);
     }
 }
 
-function drawShips(ships) {
-    for (let ship of ships) {
-        const cell = document.getElementById('cell-' + ship[2]);
-        if (ship[3] == 1) {
-            cell.style.color = 'red';
+function drawShips() {
+    for (let ship of SHIPS) {
+        if (ship.coords == null || typeof ship.coords == 'undefined') {
+            const indexShip = usedShips.indexOf(ship.prize_id);
+            usedShips.splice(indexShip, 1);
+            continue;
         }
         else {
-            cell.style.color = 'green';
+            const cell = document.getElementById('cell-' + ship.coords);
+            if (ship.was_shot) {
+                cell.textContent = 'X';
+                cell.style.color = 'red';
+            }
+            else {
+                cell.textContent = 'X';
+                cell.style.color = 'black';
+            }
         }
+
     }
 }
 
@@ -102,8 +118,8 @@ function addUserToList(user, newUser = false, userShots = 0) {
     if (newUser) {
         shots.textContent = userShots + ' выстрелов';
     } else {
-        const index = SHOTS.findIndex((shot => shot.user_name == user.name));
-        shots.textContent = SHOTS[index].remained + ' выстрелов';
+        const index = REMAIN_SHOTS.findIndex((shot => shot.user_name == user.name));
+        shots.textContent = REMAIN_SHOTS[index].remained + ' выстрелов';
     }
     userDiv.appendChild(shots);
     const plusShots = document.createElement('button');
@@ -117,7 +133,7 @@ function addUserToList(user, newUser = false, userShots = 0) {
     delUser.setAttribute('onclick', 'delUser(this)');
     userDiv.appendChild(delUser);
     if (newUser) {
-        SHOTS.push({ user_name: user, remained: userShots });
+        REMAIN_SHOTS.push({ user_name: user, remained: userShots });
     }
     document.getElementById('users').appendChild(userDiv);
 }
@@ -155,6 +171,12 @@ function delPrize(button) {
     const prizeDiv = button.parentElement;
 
     const prizeId = prizeDiv.id.slice(5);
+
+    const shipCell = document.getElementById('cell-' + SHIPS.filter(ship => ship.prize_id == prizeId)[0].coords);
+    if (shipCell != null) {
+        shipCell.textContent = '';
+        shipCell.style.color = 'black';
+    }
     fetch('/api/del_prize_from_board', {
         method: 'POST',
         body: JSON.stringify({
@@ -175,7 +197,7 @@ function delPrize(button) {
                 console.log('Prize not deleted. ' + data.message);
             }
         })
-
+    selectedShip = null;
 }
 
 function fillShipsList() {
@@ -202,14 +224,14 @@ function minusShots(button) {
         .then(data => {
             if (data.success) {
                 console.log('Shots minused');
-                const userShot = SHOTS.findIndex((shot => shot.user_name == userName));
-                SHOTS[userShot].remained--;
-                button.parentElement.querySelector('.shots').textContent = SHOTS[userShot].remained + ' выстрелов';
+                const userShot = REMAIN_SHOTS.findIndex((shot => shot.user_name == userName));
+                REMAIN_SHOTS[userShot].remained--;
+                button.parentElement.querySelector('.shots').textContent = REMAIN_SHOTS[userShot].remained + ' выстрелов';
             } else {
                 console.log('Shots not added. ' + data.message);
             }
         })
-
+    selectedShip = null;
 }
 
 function plusShots(button) {
@@ -230,13 +252,14 @@ function plusShots(button) {
         .then(data => {
             if (data.success) {
                 console.log('Shots added');
-                const userShot = SHOTS.findIndex((shot => shot.user_name == userName));
-                SHOTS[userShot].remained++;
-                button.parentElement.querySelector('.shots').textContent = SHOTS[userShot].remained + ' выстрелов';
+                const userShot = REMAIN_SHOTS.findIndex((shot => shot.user_name == userName));
+                REMAIN_SHOTS[userShot].remained++;
+                button.parentElement.querySelector('.shots').textContent = REMAIN_SHOTS[userShot].remained + ' выстрелов';
             } else {
                 console.log('Shots not added. ' + data.message);
             }
         })
+    selectedShip = null;
 }
 
 function delUser(button) {
@@ -257,22 +280,24 @@ function delUser(button) {
             if (data.success) {
                 console.log('User deleted');
                 USERS = USERS.filter(user => user.name != userName);
-                SHOTS = SHOTS.filter(shot => shot.user_name != userName);
+                REMAIN_SHOTS = REMAIN_SHOTS.filter(shot => shot.user_name != userName);
                 user.remove();
             } else {
                 console.log('User not deleted. ' + data.message);
             }
         })
-
+    selectedShip = null;
 }
 
 
 document.getElementById('addUser').addEventListener('click', () => {
     document.getElementById('addUserForm').style.display = 'block';
+    selectedShip = null;
 })
 
 document.getElementById('addPrize').addEventListener('click', () => {
     document.getElementById('addPrizeForm').style.display = 'block';
+    selectedShip = null;
 })
 
 document.getElementById('addUserForm').addEventListener('submit', (event) => {
@@ -300,7 +325,7 @@ document.getElementById('addUserForm').addEventListener('submit', (event) => {
                 console.log('User not added. ' + data.message);
             }
         })
-
+    selectedShip = null;
 })
 
 document.getElementById('addPrizeForm').addEventListener('submit', (event) => {
@@ -320,16 +345,20 @@ document.getElementById('addPrizeForm').addEventListener('submit', (event) => {
                 console.log('Prize added');
                 PRIZES.push({ id: data.id, name: formData.get('newPrizeName'), desc: formData.get('newPrizeDesc'), img: files.files[0].name });
                 addPrizeToList(PRIZES[PRIZES.length - 1]);
-                addShipToList(PRIZES[PRIZES.length - 1].id, PRIZES[PRIZES.length - 1].name);
+                addShipToList(PRIZES[PRIZES.length - 1].id, PRIZES[PRIZES.length - 1].name, true);
+
+                const indexShip = usedShips.indexOf(PRIZES[PRIZES.length - 1].id);
+                usedShips.splice(indexShip, 1);
                 document.getElementById('addPrizeForm').style.display = 'none';
             } else {
                 console.log('Prize not added. ' + data.message);
             }
         })
-
+    selectedShip = null;
 })
 
-function addShipToList(prizeId, prizeName) {
+function addShipToList(prizeId, prizeName, newShip = false) {
+
     const shipDiv = document.createElement('div');
     shipDiv.id = 'ship' + prizeId;
     const shipForPrize = document.createElement('p');
@@ -337,6 +366,13 @@ function addShipToList(prizeId, prizeName) {
     shipForPrize.textContent = 'Корабль за приз ' + prizeName;
     shipDiv.appendChild(shipForPrize);
     shipDiv.style.cursor = 'pointer';
+
+    shipDiv.addEventListener('click', () => {
+        selectedShip = prizeId;
+    })
+    if (!newShip) {
+        usedShips.push(prizeId);
+    }
     document.getElementById('ships').appendChild(shipDiv);
 }
 
@@ -344,4 +380,40 @@ function delShip(prizeId) {
     const shipDiv = document.getElementById('ship' + prizeId);
     SHIPS = SHIPS.filter(ship => ship.prize_id != prizeId);
     shipDiv.remove();
+}
+
+function setShip(cellId) {
+    if (selectedShip != null) {
+        const cell = document.getElementById(cellId);
+        if (usedShips.includes(selectedShip)) {
+            alert('Этот корабль уже на поле')
+            selectedShip = null;
+        } else if (cell.textContent == 'X') {
+            alert('На этой клетке уже есть корабль!')
+            selectedShip = null;
+        } else {
+
+            cell.textContent = 'X';
+            cell.style.color = 'black';
+            usedShips.push(selectedShip);
+            const prizeId = selectedShip;
+            selectedShip = null;
+            SHIPS.push({
+                prize_id: prizeId,
+                coords: cellId.slice(5),
+                was_shot: false,
+            })
+            fetch('/api/set_ship_on_board', {
+                method: 'POST',
+                body: JSON.stringify({
+                    prizeId: prizeId,
+                    coords: cellId.slice(5),
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+        }
+
+    }
 }
