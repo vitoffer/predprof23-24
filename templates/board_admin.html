@@ -11,48 +11,43 @@
 
 <body>
     <main>
-        <div class="users" id="users">
-            <h3>Пользователи на поле:</h3>
-            <button id="addUser">Добавить игрока на поле</button>
-            <form class="addUserForm" id="addUserForm">
-                <input type="text" name="newUserName" id="newUserName" placeholder="Введите имя пользователя" required>
-                <input type="number" name="newUserShots" id="newUserShots" placeholder="Введите начальные выстрелы"
-                    required>
-                <input type="submit" value="OK" id="newUserSubmit">
-            </form>
-            <!-- <div class="user">
-                <span class="user-id">user1:</span>
-                <button>-</button>
-                <span class="shots">2 выстрела</span>
-                <button>+</button>
-                <button class="del-user">del</button>
-            </div> -->
+        <div class="boardDiv">
+            <div class="users" id="users">
+                <h2>Пользователи на поле:</h2>
+                <button id="addUser">Добавить игрока на поле</button>
+                <form class="addUserForm" id="addUserForm">
+                    <input type="text" name="newUserName" id="newUserName" placeholder="Введите имя пользователя"
+                        required>
+                    <input type="number" name="newUserShots" id="newUserShots" placeholder="Введите начальные выстрелы"
+                        required>
+                    <input type="submit" value="OK" id="newUserSubmit">
+                </form>
+            </div>
+
         </div>
-        <div class="prizes" id="prizes">
-            <h3>Призы на поле:</h3>
-            <button id="addPrize">Добавить новый приз</button>
-            <form class="addPrizeForm" id="addPrizeForm">
-                <input type="text" name="newPrizeName" id="newPrizeName" placeholder="Введите название приза" required>
-                <input type="number" name="newPrizeDesc" id="newPrizeDesc" placeholder="Введите описание приза"
-                    required>
-                <label>Выберите картинку приза<input type="file" name="newPrizeImg" id="newPrizeImg"></label>
-                <input type="submit" value="OK" id="newPrizeSubmit">
-            </form>
-            <!-- <div class="prize">
-                <span class="prize-name">prize1:</span>
-                <p class="prize-desc">Очень хороший приз</p>
-                <img src="{{ url_for('static', filename='prizes/1.jpg') }}" alt="" class="prize-img">
-                <button class="del-prize">del</button>
-            </div> -->
+        <div class="boardDiv">
+            <div class="prizes" id="prizes">
+                <h2>Призы на поле:</h2>
+                <button id="addPrize">Добавить новый приз</button>
+                <form class="addPrizeForm" id="addPrizeForm">
+                    <input type="text" name="newPrizeName" id="newPrizeName" placeholder="Введите название приза"
+                        required>
+                    <input type="text" name="newPrizeDesc" id="newPrizeDesc" placeholder="Введите описание приза"
+                        required>
+                    <label>Выберите картинку приза<input type="file" name="newPrizeImg" id="newPrizeImg"></label>
+                    <input type="submit" value="OK" id="newPrizeSubmit">
+                </form>
+            </div>
         </div>
-        <div class="ships" id="ships">
-            <h3>Корабли на поле:</h3>
-            <!-- <div class="ship">
-                <p class="ship-prize">Корабль за приз1</p>
-                <button class="del-ship">del</button>
-            </div> -->
+
+        <div class="boardDiv">
+            <div class="ships" id="ships">
+                <h2>Корабли на поле:</h2>
+            </div>
         </div>
-        <div class="board" id="board"></div>
+        <div class="boardDiv">
+            <div class="board" id="board"></div>
+        </div>
     </main>
 </body>
 

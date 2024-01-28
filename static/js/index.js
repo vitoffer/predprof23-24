@@ -22,6 +22,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
                 console.log('Login successful');
                 window.location.href = '/boards';
             } else {
+                alert(data.message);
                 console.log('Login failed. ' + data.message);
             }
         });
@@ -50,6 +51,7 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
             if (data.success) {
                 console.log('Registration successful');
             } else {
+                alert(data.message);
                 console.log('Registration failed. ' + data.message);
             }
         });

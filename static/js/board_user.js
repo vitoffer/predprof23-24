@@ -1,4 +1,4 @@
-let boardID, username, SIZE, REMAIN_SHOTS, PRIZES, SHOTS, SHIPS;
+let boardID, username, SIZE, REMAIN_SHOTS, PRIZES, SHOTS, MYSHIPS, OTHERSHIPS;
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/board_user')
         .then(response => {
@@ -26,8 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else {
                 PRIZES = [];
-                SHIPS = [];
+                MYSHIPS = [];
             }
+
             SHOTS = Array.from(data['shots'], shot => ({
                 id: shot[0],
                 coords: shot[3],
@@ -93,16 +94,19 @@ function addPrizeToList(prize) {
     const prizeImg = document.createElement('img');
     prizeImg.style.maxWidth = '80px';
     prizeImg.style.maxHeight = '80px';
-    prizeImg.src = '/static/prizes/' + prize.img;
+    prizeImg.src = `static/prizes/${prize.img}`;
     prizeDiv.appendChild(prizeImg);
     document.getElementById('prizes').appendChild(prizeDiv);
 }
 
 function shoot(cellId) {
+    cellId = cellId.slice(5);
+    prevShots = SHOTS.map(shot => shot.coords);
     if (REMAIN_SHOTS <= 0) {
         alert('Вы превысили количество выстрелов!');
+    } else if (prevShots.includes(cellId)) {
+        alert('Вы уже стреляли в эту клетку!');
     } else {
-        cellId = cellId.slice(5);
         fetch('/api/shoot', {
             method: 'POST',
             body: JSON.stringify({
@@ -129,6 +133,7 @@ function shoot(cellId) {
 
 
                     if (data['prize'] != null) {
+                        alert('Попадание!');
                         prizeId = data['prize'][0];
                         prizeName = data['prize'][1];
                         prizeDesc = data['prize'][2];
@@ -141,6 +146,8 @@ function shoot(cellId) {
                             prize_id: prizeId,
                             coords: cellId,
                         })
+                    } else {
+                        alert('Мимо!');
                     }
 
                     drawShots();

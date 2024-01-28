@@ -1,5 +1,11 @@
 document.getElementById('addBoard').addEventListener('click', () => {
     document.getElementById('addBoardForm').style.display = 'block';
+    document.getElementById('boards').style.filter = 'blur(3px)';
+})
+
+document.getElementById('closeAddBoard').addEventListener('click', () => {
+    document.getElementById('addBoardForm').style.display = 'none';
+    document.getElementById('boards').style.filter = 'blur(0)';
 })
 
 function createBoard(id1, name1, size1) {
@@ -45,6 +51,7 @@ document.getElementById('addBoardForm').addEventListener('submit', (event) => {
         },
     })
     document.getElementById('addBoardForm').style.display = 'none';
+    document.getElementById('boards').style.filter = 'blur(0)';
 })
 
 function delBoard(event, button) {

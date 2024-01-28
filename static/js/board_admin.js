@@ -67,10 +67,17 @@ function drawBoard() {
             cell.classList.add('cell');
             cell.id = 'cell-' + i + '-' + j;
             cell.setAttribute('onclick', "setShip(this.id)");
+            if (SIZE > 20) {
+                cell.style.width = '25px';
+            }
+            else if (SIZE > 10) {
+                cell.style.width = '35px';
+            }
             row.appendChild(cell);
         }
         board.appendChild(row);
     }
+
 }
 
 function drawShips() {
@@ -105,6 +112,7 @@ function addUserToList(user, newUser = false, userShots = 0) {
     const userDiv = document.createElement('div');
 
     userDiv.id = newUser ? 'user' + user : 'user' + user.name;
+    userDiv.classList.add("userClass");
     const userName = document.createElement('span');
     userName.textContent = newUser ? user + ':' : user.name + ':';
     userDiv.appendChild(userName);
@@ -392,7 +400,6 @@ function setShip(cellId) {
             alert('На этой клетке уже есть корабль!')
             selectedShip = null;
         } else {
-
             cell.textContent = 'X';
             cell.style.color = 'black';
             usedShips.push(selectedShip);
