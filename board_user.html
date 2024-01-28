@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/board_user.css') }}" type="text/css">
+    <script src="{{ url_for('static', filename='js/board_user.js') }}" defer type="text/javascript"></script>
+</head>
+
+<body>
+    <main>
+        <div class="r_p">
+            <div class="rules" id="rules">
+                <h3 align="center" style="margin-bottom: 30px"> Правила </h3>
+                Здесь будут записаны правила игры
+            </div>
+            <div class="prizes" id="prizes">
+                <h3>Мои призы:</h3>
+            </div>
+        </div>
+        <div class="board" id="board">
+            <h3 id="remainShots">Мои выстрелы: </h3>
+        </div>
+    </main>
+</body>
+
+</html>

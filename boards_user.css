@@ -4,14 +4,17 @@
     box-sizing: border-box;
 }
 
+body {
+    background-color: #999;
+}
+
 .boards {
     width: 90%;
     margin: 20px auto;
     min-height: 95vh;
-    background-color: #c5c5c5;
-    border: solid #000 2px;
+    background-color: #ddd;
     border-radius: 20px;
-    padding: 20px;
+    padding: 30px 150px 0px 150px;
 }
 
 .board {
@@ -19,4 +22,9 @@
     align-items: center;
     justify-content: space-around;
     cursor: pointer;
+    background-color: #888;
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
 }

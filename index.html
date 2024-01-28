@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In/Up</title>
+    <script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+    <div class="parent">
+        <div class="adm_us">
+            <div class="radio"><input type="radio" name="role" id="admin_check"><label for="admin_check">Администратор</label></div>
+            <div class="radio"><input type="radio" name="role" id="user_check" checked><label for="user_check">Пользователь</label></div>
+        </div>
+        <div class="main">
+            <div class="child">
+                <h1 align="center">Login</h1>
+                <form id="loginForm">
+                    <div class="form">
+                        <div class="input"><label for="username">Username</label></div>
+                        <input type="text" id="username" name="username" required><br>
+                        <div class="input"><label for="password">Password</label></div>
+                        <input type="password" id="password" name="password" required><br>
+                        <div class="btn"><button type="submit">Login</button></div>
+                    </div>
+                </form>
+            </div>
+            <div class="child">
+                <h1 align="center">Register</h1>
+                <form id="registerForm">
+                    <div class="form">
+                        <div class="input"><label for="newUsername">Username</label></div>
+                        <input type="text" id="newUsername" name="newUsername" required><br>
+                        <div class="input"><label for="newPassword">Password</label></div>
+                        <input type="password" id="newPassword" name="newPassword" required><br>
+                        <div class="btn"><button type="submit">Register</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

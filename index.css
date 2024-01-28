@@ -4,3 +4,99 @@
     box-sizing: border-box;
 }
 
+body {
+    background-color: #999;
+}
+
+.parent {
+    background-color: #ddd;
+    margin: 20px auto;
+    min-height: 95vh;
+    width: 90%;
+    height: 90%;
+    border-radius: 20px;
+    padding: 30px 150px 0 150px;
+}
+
+.adm_us {
+    color: #fff;
+    background-color: #999;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 30px 10px 30px;
+    font-size: 20px;
+}
+
+.radio {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#admin_check, #user_check {
+    width: 22px;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-top: 40px;
+    height: 80vh;
+    padding-bottom: 50px;
+}
+
+.child {
+    background-color: #999;
+    display: grid;
+    grid-template-rows: 1fr 8fr;
+    padding: 20px 50px 20px 50px;
+    border-radius: 20px;
+}
+
+h1 {
+    color: #fff;
+}
+
+label {
+    color: #fff;
+}
+
+.btn {
+    display: grid;
+    justify-content: center;
+}
+
+button {
+    background-color: #ddd;
+    border: 0;
+    border-radius: 20px;
+    padding: 10px 20px 10px 20px;
+}
+
+button:hover {
+    scale: 1.05;
+    transition: 0.05s;
+    cursor: pointer;
+}
+
+.input {
+    display: grid;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+#username, #password, #newUsername, #newPassword {
+    background-color: #fff;
+    border: 0;
+    border-radius: 20px;
+    padding: 10px;
+    width: 100%;
+}
+
+.form {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+}

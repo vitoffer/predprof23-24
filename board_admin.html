@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/board_admin.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/board_admin.js') }}" defer></script>
+</head>
+
+<body>
+    <main id="main">
+        <div class="boardDiv">
+            <div class="users" id="users">
+                <h2>Пользователи на поле:</h2>
+                <button id="addUser">Добавить игрока на поле</button>
+            </div>
+        </div>
+        <div class="boardDiv"><div class="prizes" id="prizes">
+            <h2>Призы на поле:</h2>
+            <button id="addPrize">Добавить новый приз</button>
+        </div>
+        </div>
+        <div class="boardDiv">
+            <div class="ships" id="ships">
+                <h2>Корабли на поле:</h2>
+            </div>
+        </div>
+        <div class="boardDiv"><div class="board" id="board"></div></div>
+    </main>
+
+    <form class="addUserForm" id="addUserForm">
+        <div class="formDiv">
+            <div id="closeAddUser">x</div>
+            <input type="text" name="newUserName" id="newUserName" placeholder="Введите имя пользователя" required>
+            <input type="number" name="newUserShots" id="newUserShots" placeholder="Введите начальные выстрелы" required>
+            <input type="submit" value="OK" id="newUserSubmit">
+        </div>
+    </form>
+
+    <form class="addPrizeForm" id="addPrizeForm">
+        <div class="formDiv">
+            <div id="closeAddPrize">x</div>
+            <input type="text" name="newPrizeName" id="newPrizeName" placeholder="Введите название приза" required>
+            <input type="text" name="newPrizeDesc" id="newPrizeDesc" placeholder="Введите описание приза" required>
+            <label align="center" style="color: #fff">Выберите картинку приза <br><br> <input type="file" name="newPrizeImg" id="newPrizeImg"></label>
+            <input type="submit" value="OK" id="newPrizeSubmit">
+        </div>
+    </form>
+</body>
+
+</html>
