@@ -4,17 +4,43 @@
     box-sizing: border-box;
 }
 
+body {
+    background-color: #999;
+}
+
 main {
     display: grid;
-    gap: 20px;
-    grid-template-columns: 2fr 2fr 3fr;
+    grid-template-columns: 50% 50%;
+    height: 95vh;
+    width: 95vw;
+    margin: 20px auto;
+    gap: 50px;
 }
 
 .rules,
 .prizes,
+.s_b {
+    background-color: #ddd;
+    border: 0;
+    border-radius: 20px;
+    padding-inline: 5%;
+    padding-top: 20px;
+}
+
+.s_b {
+    padding-inline: 20px;
+    padding-bottom: 20px;
+}
+
+.rules {
+    font-size: 20px;
+}
+
 .board {
-    background-color: #c9c9c9;
-    border: #000 2px solid;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    align-items: normal;
 }
 
 h3 {
@@ -32,13 +58,38 @@ img {
 
 .cell {
     width: 50px;
-    height: 50px;
+    aspect-ratio: 1;
     background-color: #b4b4b4;
     border: 2px solid #000;
     cursor: pointer;
     display: grid;
     place-content: center;
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-family: Arial;
     color: #b4b4b4;
+}
+
+.r_p {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 50px;
+}
+
+.prizeClass {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #888;
+    border-radius: 10px;
+    width: fit-content;
+    height: fit-content;
+    color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 20px;
+}
+
+#remainShots {
+    margin-bottom: 50px;
 }

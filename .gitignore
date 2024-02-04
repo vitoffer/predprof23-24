@@ -1,0 +1,7 @@
+.idea
+__pycache__
+.vscode
+static/prizes
+urls/__pycache__
+views/__pycache__
+data.db

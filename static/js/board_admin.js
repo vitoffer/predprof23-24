@@ -35,17 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 user_name: shot[2],
                 coords: shot[3],
             }))
-            // console.log('id: ' + ID);
-            // console.log('name: ' + NAME);
-            // console.log('size: ' + SIZE);
-            // console.log('users:');
-            // console.log(USERS);
-            // console.log('shots:');
-            // console.log(SHOTS);
-            // console.log('prizes:');
-            // console.log(PRIZES);
-            // console.log('ships:');
-            // console.log(SHIPS);
             fillUsersList();
             fillPrizesList();
             fillShipsList();
@@ -69,9 +58,11 @@ function drawBoard() {
             cell.setAttribute('onclick', "setShip(this.id)");
             if (SIZE > 20) {
                 cell.style.width = '25px';
+                cell.style.fontSize = '.6rem'
             }
             else if (SIZE > 10) {
                 cell.style.width = '35px';
+                cell.style.fontSize = '1.7rem'
             }
             row.appendChild(cell);
         }
@@ -155,6 +146,7 @@ function fillPrizesList() {
 function addPrizeToList(prize) {
     const prizeDiv = document.createElement('div');
     prizeDiv.id = 'prize' + prize.id;
+    prizeDiv.classList.add('prizeClass');
     const prizeName = document.createElement('span');
     prizeName.textContent = prize.name + ':';
     prizeDiv.appendChild(prizeName);
@@ -181,10 +173,7 @@ function delPrize(button) {
     const prizeId = prizeDiv.id.slice(5);
 
     const shipCell = document.getElementById('cell-' + SHIPS.filter(ship => ship.prize_id == prizeId)[0].coords);
-    if (shipCell != null) {
-        shipCell.textContent = '';
-        shipCell.style.color = 'black';
-    }
+
     fetch('/api/del_prize_from_board', {
         method: 'POST',
         body: JSON.stringify({
@@ -197,11 +186,16 @@ function delPrize(button) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                if (shipCell != null) {
+                    shipCell.textContent = '';
+                    shipCell.style.color = 'black';
+                }
                 console.log('Prize deleted');
                 USERS = USERS.filter(prize => prize.id != prizeId);
                 delShip(prizeId)
                 prizeDiv.remove();
             } else {
+                alert('Не удалось удалить приз. ' + data.message);
                 console.log('Prize not deleted. ' + data.message);
             }
         })
@@ -291,6 +285,7 @@ function delUser(button) {
                 REMAIN_SHOTS = REMAIN_SHOTS.filter(shot => shot.user_name != userName);
                 user.remove();
             } else {
+                alert('Не удалось удалить пользователя. ' + data.message);
                 console.log('User not deleted. ' + data.message);
             }
         })
@@ -300,11 +295,25 @@ function delUser(button) {
 
 document.getElementById('addUser').addEventListener('click', () => {
     document.getElementById('addUserForm').style.display = 'block';
+    document.getElementById('main').style.filter = 'blur(3px)';
+    selectedShip = null;
+})
+
+document.getElementById('closeAddUser').addEventListener('click', () => {
+    document.getElementById('addUserForm').style.display = 'none';
+    document.getElementById('main').style.filter = 'blur(0)';
     selectedShip = null;
 })
 
 document.getElementById('addPrize').addEventListener('click', () => {
     document.getElementById('addPrizeForm').style.display = 'block';
+    document.getElementById('main').style.filter = 'blur(3px)';
+    selectedShip = null;
+})
+
+document.getElementById('closeAddPrize').addEventListener('click', () => {
+    document.getElementById('addPrizeForm').style.display = 'none';
+    document.getElementById('main').style.filter = 'blur(0)';
     selectedShip = null;
 })
 
@@ -329,6 +338,7 @@ document.getElementById('addUserForm').addEventListener('submit', (event) => {
                 console.log('User added');
                 addUserToList(username, newUser = true, userShots = shots);
                 document.getElementById('addUserForm').style.display = 'none';
+                document.getElementById('main').style.filter = 'blur(0)';
             } else {
                 console.log('User not added. ' + data.message);
             }
@@ -358,6 +368,7 @@ document.getElementById('addPrizeForm').addEventListener('submit', (event) => {
                 const indexShip = usedShips.indexOf(PRIZES[PRIZES.length - 1].id);
                 usedShips.splice(indexShip, 1);
                 document.getElementById('addPrizeForm').style.display = 'none';
+                document.getElementById('main').style.filter = 'blur(0)';
             } else {
                 console.log('Prize not added. ' + data.message);
             }
@@ -369,8 +380,8 @@ function addShipToList(prizeId, prizeName, newShip = false) {
 
     const shipDiv = document.createElement('div');
     shipDiv.id = 'ship' + prizeId;
+    shipDiv.classList.add('ship-prize');
     const shipForPrize = document.createElement('p');
-    shipForPrize.classList.add('ship-prize');
     shipForPrize.textContent = 'Корабль за приз ' + prizeName;
     shipDiv.appendChild(shipForPrize);
     shipDiv.style.cursor = 'pointer';

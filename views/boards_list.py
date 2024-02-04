@@ -44,5 +44,11 @@ def del_board():
     data = request.get_json()
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
-        cursor.execute('''DELETE FROM boards WHERE id=?''', data['id'])
+        cursor.execute('''DELETE FROM boards WHERE id = ?''', data['id'])
+        cursor.execute('''DELETE FROM remain_shots WHERE board_id = ?''', data['id'])
+        prizes_ids = cursor.execute('''SELECT id FROM prizes WHERE board_id = ?''', data['id']).fetchall()
+        for prize_id in prizes_ids:
+            cursor.execute('''DELETE FROM ships WHERE prize_id = ?''', (prize_id[0],))
+        cursor.execute('''DELETE FROM prizes WHERE board_id = ?''', data['id'])
+        cursor.execute('''DELETE FROM shots WHERE board_id = ?''', data['id'])
         return jsonify({'success': True})

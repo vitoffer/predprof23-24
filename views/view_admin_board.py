@@ -71,6 +71,10 @@ def del_user_from_board():
         cursor = connect.cursor()
         board_id = data['boardId']
         username = data['userName']
+        user_shots = cursor.execute('SELECT * FROM shots WHERE username = ? AND board_id = ?', (username, board_id)).fetchone()
+        if user_shots != None:
+            return jsonify({'success': False, 'message': 'Пользователь уже выстрелил по полю'})
+
         prev_board_users = ',' + cursor.execute('SELECT users FROM boards WHERE id = ?', (board_id,)).fetchone()[0] + ','
 
         new_board_users = prev_board_users.replace(',' + username + ',', ',')[1:-1]
@@ -119,6 +123,9 @@ def del_prize_from_board():
     data = request.get_json()
     with sqlite3.connect(DB_FILE) as connect:
         cursor = connect.cursor()
+        prize_ship_shot = cursor.execute('SELECT was_shot FROM ships WHERE prize_id = ?', (data['prizeId'], )).fetchone()[0]
+        if prize_ship_shot == 1:
+            return jsonify({'success': False, 'message': 'Этот приз уже получил один из пользователей'})
         cursor.execute('DELETE FROM prizes WHERE id = ?', (data['prizeId'],))
         cursor.execute('DELETE FROM ships WHERE prize_id = ?', (data['prizeId'],))
         users = cursor.execute('SELECT * FROM users').fetchall()

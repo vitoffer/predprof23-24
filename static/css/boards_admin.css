@@ -76,12 +76,7 @@ h1 {
 }
 
 #newBoardName,
-#newBoardSize {
-    border: 0;
-    border-radius: 10px;
-    padding: 8px;
-}
-
+#newBoardSize,
 #newBoardSubmit {
     border: 0;
     border-radius: 10px;

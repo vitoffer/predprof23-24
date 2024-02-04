@@ -54,6 +54,14 @@ function drawBoard() {
             cell.classList.add('cell');
             cell.id = 'cell-' + i + '-' + j;
             cell.setAttribute('onclick', "shoot(this.id)");
+            if (SIZE > 20) {
+                cell.style.width = '25px';
+                cell.style.fontSize = '.59rem'
+            }
+            else if (SIZE > 10) {
+                cell.style.width = '35px';
+                cell.style.fontSize = '1.7rem'
+            }
             row.appendChild(cell);
         }
         board.appendChild(row);
@@ -85,6 +93,7 @@ function fillPrizesList() {
 function addPrizeToList(prize) {
     const prizeDiv = document.createElement('div');
     prizeDiv.id = 'prize' + prize.id;
+    prizeDiv.classList.add('prizeClass');
     const prizeName = document.createElement('span');
     prizeName.textContent = prize.name + ':';
     prizeDiv.appendChild(prizeName);
@@ -94,7 +103,7 @@ function addPrizeToList(prize) {
     const prizeImg = document.createElement('img');
     prizeImg.style.maxWidth = '80px';
     prizeImg.style.maxHeight = '80px';
-    prizeImg.src = `static/prizes/${prize.img}`;
+    prizeImg.src = `/static/prizes/${prize.img}`;
     prizeDiv.appendChild(prizeImg);
     document.getElementById('prizes').appendChild(prizeDiv);
 }
@@ -130,7 +139,6 @@ function shoot(cellId) {
                         id: data['shot_id'],
                         coords: cellId,
                     });
-
 
                     if (data['prize'] != null) {
                         alert('Попадание!');
